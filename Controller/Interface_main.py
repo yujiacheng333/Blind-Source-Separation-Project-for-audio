@@ -1,3 +1,6 @@
+"""
+    The main func of controller
+"""
 import numpy as np
 import json_reader
 import os
@@ -6,7 +9,6 @@ import ILRMA
 import OPS
 from scipy.io import wavfile
 import matplotlib.pyplot as plt
-# test only
 
 
 class InterFaceMain(object):
@@ -17,15 +19,15 @@ class InterFaceMain(object):
     def __init__(self):
         """it will be build after controller finished"""
         js = json_reader.JsonReader()
-        self.params  = js.load_json()
+        self.params = js.load_json()
         self.fsresample = self.params["fsresample"]
         if self.fsresample < 8000:
             raise Warning("Low sample rate will inflect the performance of the project")
 
-    def testcontroller(self):
+    def testcontroller(self):  # test only
         """
         the test func for controller
-        :param mix: the mixture of mutichannel signals
+        :param: the mixture of mutichannel signals
         :return: the separated signal
         """
         sig = []
@@ -42,15 +44,18 @@ class InterFaceMain(object):
         mix[:, 0] = sig[:, 0, 0] + sig[:, 0, 1]
         mix[:, 1] = sig[:, 1, 0] + sig[:, 1, 1]
         mix = OPS.OPS().normalize(mix.T).T
+        mix = OPS.OPS().perp_mu(mix)
+        wavfile.write("./out_dir/mix.wav", self.fsresample, mix.astype(np.float32))
         if np.abs(np.max(mix)) > 1:
             print("Clipped detected while mixing")
-        [sep, cost] = ILRMA.ILRMA().bss_ILRMA(mix_audio=mix)
-        print(sep.shape)
-        plt.subplot(2,1,1)
-        plt.plot(sep[0, :])
-        plt.subplot(2,1,2)
-        plt.plot(sep[1, :])
-        plt.show()
+        [sep, _] = ILRMA.ILRMA().bss_ILRMA(mix_audio=mix)
+        if self.params["drawConv"]:
+            plt.subplot(2, 1, 1)
+            plt.plot(sep[0, :])
+            plt.subplot(2, 1, 2)
+            plt.plot(sep[1, :])
+            plt.show()
+        sep = sep.astype(np.float32)
         if not os.path.exists("out_dir"):
             os.mkdir("out_dir")
         wavfile.write("./out_dir/out_sep1.wav", self.fsresample, sep[0, :])
