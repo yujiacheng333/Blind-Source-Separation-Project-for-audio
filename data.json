@@ -1,0 +1,15 @@
+{"file_path": "../videos",
+ "buffer_path": "../buffers",
+ "iterate": 100,
+ "base_num": 10,
+ "n_source": 2,
+ "normalize":1,
+ "drawConv": 1,
+ "fft_sz": 4096,
+ "win_length": 4096,
+ "win_type": "hann",
+ "move_length":2048,
+ "ref_mic":0,
+ "max_amp": 256,
+ "fsresample": 16000
+}
